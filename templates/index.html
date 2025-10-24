@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Project Samrath - Agricultural Data Q&A System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <style>
+                    :root {
+                        --primary: #2c3e50;
+                        --accent: #3498db;
+                        --success: #2ecc71;
+                        --warning: #f1c40f;
+                        --danger: #e74c3c;
+                        --bg: #f5f7fa;
+                        --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+                        --transition: all 0.3s ease;
+                    }
+
+                    body {
+                        background: var(--bg);
+                        font-family: 'Segoe UI', system-ui, -apple-system, Arial;
+                        color: var(--primary);
+                    }
+
+                    .card {
+                        border: none;
+                        border-radius: 1rem;
+                        box-shadow: var(--card-shadow);
+                        transition: var(--transition);
+                    }
+
+                    .card:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 12px -1px rgba(0,0,0,0.12), 0 4px 6px -1px rgba(0,0,0,0.08);
+                    }
+
+                    .chat-container {
+                        height: 58vh;
+                        overflow: auto;
+                        padding: 1rem;
+                        background: #fff;
+                        border-radius: 1rem;
+                        border: 1px solid rgba(0,0,0,0.04);
+                        scrollbar-width: thin;
+                        scrollbar-color: var(--accent) transparent;
+                    }
+
+                    .chat-container::-webkit-scrollbar {
+                        width: 6px;
+                    }
+
+                    .chat-container::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+
+                    .chat-container::-webkit-scrollbar-thumb {
+                        background-color: var(--accent);
+                        border-radius: 3px;
+                    }
+
+                    .message {
+                        margin-bottom: 1rem;
+                        padding: 1rem;
+                        border-radius: 1rem;
+                        animation: fadeIn 0.3s ease;
+                    }
+
+                    .message-user {
+                        background: linear-gradient(145deg, #e3f2fd, #bbdefb);
+                        margin-left: 2rem;
+                        border-top-right-radius: 0.25rem;
+                    }
+
+                    .message-bot {
+                        background: linear-gradient(145deg, #f8f9fa, #eceff1);
+                        margin-right: 2rem;
+                        border-top-left-radius: 0.25rem;
+                    }
+
+                    .visualization-container {
+                        background: #fff;
+                        padding: 1rem;
+                        border-radius: 1rem;
+                        box-shadow: var(--card-shadow);
+                    }
+
+                    .stat-card {
+                        min-height: 80px;
+                        padding: 1rem;
+                        border-radius: 0.75rem;
+                        background: linear-gradient(145deg, #ffffff, #f5f7fa);
+                        transition: var(--transition);
+                    }
+
+                    .stat-card:hover {
+                        transform: translateY(-2px);
+                    }
+
+                    .state-card {
+                        transition: var(--transition);
+                        border-radius: 0.75rem;
+                        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+                    }
+
+                    .state-card:hover {
+                        transform: translateY(-2px);
+                        box-shadow: var(--card-shadow);
+                    }
+
+                    .canvas-box {
+                        height: 180px;
+                        border-radius: 0.75rem;
+                        background: linear-gradient(145deg, #ffffff, #f8f9fa);
+                        padding: 1rem;
+                    }
+
+                    .btn {
+                        border-radius: 0.75rem;
+                        padding: 0.5rem 1rem;
+                        transition: var(--transition);
+                        border: none;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+
+                    .btn:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+                    }
+
+                    .btn-primary {
+                        background: linear-gradient(145deg, #3498db, #2980b9);
+                        color: white;
+                    }
+
+                    .btn-outline-secondary {
+                        background: linear-gradient(145deg, #ffffff, #f5f7fa);
+                        color: var(--primary);
+                        border: 1px solid #e0e0e0;
+                    }
+
+                    .btn-outline-secondary:hover {
+                        background: linear-gradient(145deg, #f5f7fa, #e0e0e0);
+                    }
+
+                    .progress {
+                        height: 8px;
+                        border-radius: 4px;
+                        background: #e0e0e0;
+                        overflow: hidden;
+                    }
+
+                    .progress-bar {
+                        background: linear-gradient(90deg, var(--accent), #2980b9);
+                        transition: width 0.6s ease;
+                    }
+
+                    .text-success {
+                        color: var(--success) !important;
+                    }
+
+                    .text-warning {
+                        color: var(--warning) !important;
+                    }
+
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+
+                    .form-control {
+                        border-radius: 0.75rem;
+                        border: 1px solid #e0e0e0;
+                        padding: 0.75rem 1rem;
+                        transition: var(--transition);
+                    }
+
+                    .form-control:focus {
+                        border-color: var(--accent);
+                        box-shadow: 0 0 0 3px rgba(52,152,219,0.25);
+                    }
+
+                    .input-group .btn {
+                        border-top-right-radius: 0.75rem;
+                        border-bottom-right-radius: 0.75rem;
+                    }
+
+                    h5, h6 {
+                        font-weight: 600;
+                        color: var(--primary);
+                    }
+
+                    .badge {
+                        padding: 0.5rem 1rem;
+                        border-radius: 0.5rem;
+                        font-weight: 500;
+                    }
+
+                    .alert {
+                        border-radius: 0.75rem;
+                        border: none;
+                        box-shadow: var(--card-shadow);
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container py-4">
+                    <div class="row g-4">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-body p-4">
+                                    <h5 class="card-title mb-4"><i class="fas fa-comments me-2"></i>Ask the System</h5>
+                                    <div id="chatContainer" class="chat-container mb-3"></div>
+                                    <div id="loading" class="text-center my-2" style="display:none"><div class="spinner-border text-primary" role="status"></div><div class="small">Processing your query...</div></div>
+                                    <form id="queryForm" class="input-group">
+                                        <input id="queryInput" class="form-control" placeholder="Ask about agricultural data and climate patterns..." required>
+                                        <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane"></i> Ask</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-chart-line"></i> Analytics</h5>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <div class="flex-grow-1">
+                                            <div class="small text-muted">Queries Today</div>
+                                            <div id="queryCount" class="h5">0</div>
+                                        </div>
+                                        <div class="text-end">
+                                            <div class="small text-muted">Success Rate</div>
+                                            <div id="successRate" class="h5">0%</div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <div class="progress" style="height:8px"><div id="successBar" class="progress-bar" role="progressbar" style="width:0%"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Performance</h6>
+                                    <div class="d-flex justify-content-between">
+                                        <div class="stat-card">
+                                            <div class="small text-muted">Avg Response</div>
+                                            <div id="avgResponseTime" class="h6">-</div>
+                                        </div>
+                                        <div class="stat-card text-center">
+                                            <div class="small text-muted">Cache Hit</div>
+                                            <div id="cacheHitRate" class="h6">-</div>
+                                        </div>
+                                        <div class="stat-card text-end">
+                                            <div class="small text-muted">Peak</div>
+                                            <div id="peakResponse" class="h6">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Top States</h6>
+                                    <div id="topStates"></div>
+                                    <hr>
+                                    <h6 class="mb-2">Top Crops</h6>
+                                    <div id="topCrops"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3 g-3">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <h6 class="mb-0">Query Volume</h6>
+                                        <div class="d-flex gap-2 align-items-center">
+                                            <button class="btn btn-sm btn-outline-danger" id="resetBtn" title="Reset all analytics data">
+                                                <i class="fas fa-redo-alt"></i> Reset
+                                            </button>
+                                            <div class="btn-group btn-group-sm" role="group" aria-label="period">
+                                                <button class="btn btn-outline-secondary active" data-period="hour">Hour</button>
+                                                <button class="btn btn-outline-secondary" data-period="day">Day</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="canvas-box"><canvas id="queryChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Geographic Insights</h6>
+                                    <div class="canvas-box"><canvas id="geoChart"></canvas></div>
+                                    <div class="row mt-2" id="stateDetails"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3 g-3">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Query Types</h6>
+                                    <div class="d-flex mb-2 align-items-center">
+                                        <select id="chartType" class="form-select form-select-sm w-auto me-2"><option value="doughnut">Doughnut</option><option value="pie">Pie</option><option value="bar">Bar</option></select>
+                                        <button class="btn btn-sm btn-outline-secondary" id="exportBtn">Export</button>
+                                    </div>
+                                    <div class="canvas-box"><canvas id="queryTypesChart"></canvas></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Trend Analysis <span id="trendIndicator" class="badge bg-warning text-dark ms-2">→ Stable</span></h6>
+                                    <div class="canvas-box"><canvas id="trendChart"></canvas></div>
+                                    <div class="mt-2 small text-muted" id="lastUpdate">Last updated: -</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    // Lightweight dashboard script that wires to backend endpoints
+                    let queryChart, geoChart, queryTypesChart, trendChart;
+                    let currentPeriod = 'hour';
+
+                    function formatNumber(n) { if (n === undefined || n === null) return '-'; if (n >= 1000) return (n/1000).toFixed(1)+'k'; return String(n); }
+                    function createProgressBar(value, max, color = '#3498db') { const pct = max ? Math.round((value/max)*100) : 0; return `<div class="progress" style="height:8px;"><div class="progress-bar" role="progressbar" style="width:${pct}%;background-color:${color}" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div></div>`; }
+
+                    function updateTopItems(data, containerId) {
+                        const container = document.getElementById(containerId);
+                        if (!container) return;
+                        
+                        // Check if we have valid data
+                        if (!data || typeof data !== 'object' || Object.keys(data).length === 0) {
+                            container.innerHTML = '<small class="text-muted">No data available</small>';
+                            return;
+                        }
+                        
+                        try {
+                            // Sort and slice top 5 items
+                            const items = Object.entries(data)
+                                .filter(([k, v]) => k && v) // Ensure both key and value exist
+                                .sort((a,b) => b[1] - a[1])
+                                .slice(0, 5);
+                            
+                            if (items.length === 0) {
+                                container.innerHTML = '<small class="text-muted">No data available</small>';
+                                return;
+                            }
+                            
+                            const max = items[0][1]; // Get the highest value for progress bar
+                            
+                            // Generate HTML for items
+                            container.innerHTML = items.map(([key, value]) => `
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-nowrap text-truncate" style="max-width: 150px" title="${key}">${key}</small>
+                                        <small class="text-muted ms-2">${formatNumber(value)}</small>
+                                    </div>
+                                    ${createProgressBar(value, max)}
+                                </div>
+                            `).join('');
+                            
+                        } catch (err) {
+                            console.error('Error updating top items:', err);
+                            container.innerHTML = '<small class="text-muted">Error displaying data</small>';
+                        }
+                    }
+
+                    function initCharts() {
+                        // Common animation config
+                        const animation = {
+                            duration: 800,
+                            easing: 'easeOutQuart',
+                        };
+
+                        // Common tooltip config
+                        const tooltip = {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: false
+                        };
+
+                        const qctx = document.getElementById('queryChart').getContext('2d');
+                        queryChart = new Chart(qctx, { 
+                            type: 'line', 
+                            data: { 
+                                labels: [], 
+                                datasets: [{ 
+                                    label: 'Queries', 
+                                    data: [], 
+                                    borderColor: '#3498db',
+                                    backgroundColor: 'rgba(52,152,219,0.12)',
+                                    fill: true, 
+                                    tension: 0.4,
+                                    borderWidth: 2
+                                }] 
+                            }, 
+                            options: { 
+                                responsive: true, 
+                                maintainAspectRatio: false,
+                                animation,
+                                plugins: {
+                                    tooltip,
+                                    legend: { display: false }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: 'rgba(0,0,0,0.05)' }
+                                    },
+                                    x: {
+                                        grid: { display: false }
+                                    }
+                                }
+                            } 
+                        });
+
+                        const gctx = document.getElementById('geoChart').getContext('2d');
+                        geoChart = new Chart(gctx, { 
+                            type: 'bar', 
+                            data: { 
+                                labels: [], 
+                                datasets: [{ 
+                                    label: 'Queries by State', 
+                                    data: [], 
+                                    backgroundColor: 'rgba(46,204,113,0.8)',
+                                    borderColor: '#27ae60',
+                                    borderWidth: 1,
+                                    borderRadius: 6
+                                }] 
+                            }, 
+                            options: { 
+                                indexAxis: 'y',
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation,
+                                plugins: {
+                                    tooltip,
+                                    legend: { display: false }
+                                },
+                                scales: {
+                                    x: {
+                                        beginAtZero: true,
+                                        grid: { display: false }
+                                    },
+                                    y: {
+                                        grid: { display: false }
+                                    }
+                                }
+                            } 
+                        });
+
+                        const tctx = document.getElementById('queryTypesChart').getContext('2d');
+                        queryTypesChart = new Chart(tctx, { 
+                            type: 'doughnut', 
+                            data: { 
+                                labels: [], 
+                                datasets:[{ 
+                                    data: [], 
+                                    backgroundColor: [
+                                        'rgba(46,204,113,0.8)',
+                                        'rgba(52,152,219,0.8)',
+                                        'rgba(155,89,182,0.8)',
+                                        'rgba(231,76,60,0.8)',
+                                        'rgba(241,196,15,0.8)'
+                                    ],
+                                    borderWidth: 2,
+                                    borderColor: '#fff'
+                                }] 
+                            }, 
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation: {
+                                    ...animation,
+                                    animateRotate: true,
+                                    animateScale: true
+                                },
+                                plugins: {
+                                    tooltip,
+                                    legend: {
+                                        position: 'right',
+                                        labels: {
+                                            padding: 20,
+                                            usePointStyle: true
+                                        }
+                                    }
+                                }
+                            } 
+                        });
+
+                        const trctx = document.getElementById('trendChart').getContext('2d');
+                        trendChart = new Chart(trctx, { 
+                            type: 'line', 
+                            data: { 
+                                labels: [], 
+                                datasets:[{ 
+                                    label:'Queries per Hour', 
+                                    data:[], 
+                                    borderColor:'#9b59b6',
+                                    backgroundColor:'rgba(155,89,182,0.12)', 
+                                    fill: true,
+                                    tension: 0.4,
+                                    borderWidth: 2
+                                }] 
+                            }, 
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                animation,
+                                plugins: {
+                                    tooltip,
+                                    legend: { display: false }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: { color: 'rgba(0,0,0,0.05)' }
+                                    },
+                                    x: {
+                                        grid: { display: false }
+                                    }
+                                }
+                            } 
+                        });
+                    }
+
+                    async function updateStats() {
+                        try {
+                            const [statsRes, perfRes, typesRes, trendRes] = await Promise.all([
+                                fetch('/query_stats'), fetch('/performance_metrics'), fetch('/query_types'), fetch('/trend_analysis')
+                            ]);
+
+                            if (!statsRes.ok) return; // nothing to do
+                            const stats = await statsRes.json();
+                            const perf = perfRes.ok ? await perfRes.json() : {};
+                            const types = typesRes.ok ? await typesRes.json() : {distribution:{}};
+                            const trend = trendRes.ok ? await trendRes.json() : {hourly_data:{}};
+
+                            // Basic counts
+                            document.getElementById('queryCount').textContent = formatNumber(stats.total_queries_today || 0);
+                            const successPct = stats.success_rate ? Math.round(stats.success_rate) : 0;
+                            document.getElementById('successRate').textContent = `${successPct}%`;
+                            document.getElementById('successBar').style.width = `${successPct}%`;
+
+                            // Performance
+                            if (perf.average_response_time !== undefined) document.getElementById('avgResponseTime').textContent = `${perf.average_response_time.toFixed(2)} ms`;
+                            if (perf.cache_hit_rate !== undefined) document.getElementById('cacheHitRate').textContent = `${(perf.cache_hit_rate*100).toFixed(1)}%`;
+                            if (perf.max_response_time !== undefined) document.getElementById('peakResponse').textContent = `${perf.max_response_time.toFixed(2)} ms`;
+
+                            // Query volume (hourly)
+                            if (stats.hourly_queries && Array.isArray(stats.hourly_queries) && queryChart) {
+                                const labels = stats.hourly_queries.map((_,i)=> currentPeriod === 'hour' ? `${i}:00` : `Day ${i+1}`);
+                                queryChart.data.labels = labels; queryChart.data.datasets[0].data = stats.hourly_queries; queryChart.update();
+                            }
+
+                            // Top items
+                            if (stats.today_stats) {
+                                console.log('Updating top states:', stats.today_stats.top_states);
+                                console.log('Updating top crops:', stats.today_stats.top_crops);
+                                
+                                // Update top states
+                                const topStates = stats.today_stats.top_states || {};
+                                if (Object.keys(topStates).length > 0) {
+                                    updateTopItems(topStates, 'topStates');
+                                } else {
+                                    document.getElementById('topStates').innerHTML = 
+                                        '<div class="text-muted small">No state data available yet</div>';
+                                }
+                                
+                                // Update top crops
+                                const topCrops = stats.today_stats.top_crops || {};
+                                if (Object.keys(topCrops).length > 0) {
+                                    updateTopItems(topCrops, 'topCrops');
+                                } else {
+                                    document.getElementById('topCrops').innerHTML = 
+                                        '<div class="text-muted small">No crop data available yet</div>';
+                                }
+                            }
+
+                            // Geo
+                            try {
+                                if (stats.geographic_insights && Object.keys(stats.geographic_insights).length > 0 && geoChart) {
+                                    const states = Object.keys(stats.geographic_insights);
+                                    const counts = states.map(s=> stats.geographic_insights[s].query_count || 0);
+                                    
+                                    // Update chart with data
+                                    geoChart.data.labels = states;
+                                    geoChart.data.datasets[0].data = counts;
+                                    geoChart.update();
+                                    
+                                    // Update state details
+                                    const stateDetails = document.getElementById('stateDetails');
+                                    if (stateDetails) {
+                                        stateDetails.innerHTML = states.slice(0,3).map(s => {
+                                            const d = stats.geographic_insights[s];
+                                            // success_rate is a percentage (0-100) from backend
+                                            const successRate = Math.min(100, Math.max(0, d.success_rate || 0));
+                                            return `<div class="col-4">
+                                                <div class="state-card p-2 rounded bg-light">
+                                                    <h6 class="mb-1">${s}</h6>
+                                                    <small class="d-block text-muted">${formatNumber(d.query_count||0)} queries</small>
+                                                    <small class="d-block text-${successRate >= 75 ? 'success' : 'warning'}">
+                                                        ${successRate.toFixed(1)}% success
+                                                    </small>
+                                                </div>
+                                            </div>`;
+                                        }).join('');
+                                    }
+                                } else if (geoChart) {
+                                    // Reset chart if no data
+                                    geoChart.data.labels = [];
+                                    geoChart.data.datasets[0].data = [];
+                                    geoChart.update();
+                                    
+                                    // Show no data message
+                                    const stateDetails = document.getElementById('stateDetails');
+                                    if (stateDetails) {
+                                        stateDetails.innerHTML = '<div class="col-12 text-center text-muted">No geographical data available yet. Try asking questions about specific states.</div>';
+                                    }
+                                }
+                            } catch (err) {
+                                console.error('Error updating geographical insights:', err);
+                            }
+
+                            // Query types
+                            if (types.distribution && queryTypesChart) {
+                                const labels = Object.keys(types.distribution); const values = Object.values(types.distribution).map(v=> Math.round(v*100));
+                                queryTypesChart.data.labels = labels; queryTypesChart.data.datasets[0].data = values; queryTypesChart.update();
+                            }
+
+                            // Trend
+                            if (trend.hourly_data && trendChart) {
+                                const labels = Object.keys(trend.hourly_data); const values = Object.values(trend.hourly_data);
+                                trendChart.data.labels = labels; trendChart.data.datasets[0].data = values; trendChart.update();
+                            }
+
+                            document.getElementById('lastUpdate').textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+                        } catch (err) { console.error('updateStats error', err); }
+                    }
+
+                    async function askQuery(query) {
+                        const loading = document.getElementById('loading'); const chat = document.getElementById('chatContainer');
+                        if (!query) return;
+                        loading.style.display = 'block';
+                        try {
+                            const res = await fetch('/ask', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query}) });
+                            let payload = null; try { payload = await res.json(); } catch(e){ payload = null; }
+                            if (!res.ok || (payload && payload.error)) {
+                                const msg = payload?.error || payload?.message || `Server error (${res.status})`;
+                                const err = document.createElement('div'); err.className='alert alert-danger'; err.textContent = msg; chat.appendChild(err); return;
+                            }
+
+                            const container = document.createElement('div'); container.className='message';
+                            const qdiv = document.createElement('div'); qdiv.className='message-user'; qdiv.textContent = query; container.appendChild(qdiv);
+                            const adiv = document.createElement('div'); adiv.className='message-bot';
+                            let ans = '';
+                            if (payload) { if (typeof payload.answer === 'string') ans = payload.answer; else if (Array.isArray(payload.answer)) ans = payload.answer.join('\n'); else if (payload.answer) ans = JSON.stringify(payload.answer, null, 2); }
+                            adiv.innerHTML = `<pre style="white-space:pre-wrap;margin:0">${ans||'No answer'}</pre>`;
+                            if (payload && payload.visualization) { const img = document.createElement('img'); img.src='data:image/png;base64,'+payload.visualization; img.className='img-fluid mt-2'; adiv.appendChild(img); }
+                            container.appendChild(adiv); chat.appendChild(container); chat.scrollTop = chat.scrollHeight; document.getElementById('queryInput').value = '';
+                            // refresh stats
+                            updateStats();
+                        } catch (err) { console.error('askQuery error', err); const e = document.createElement('div'); e.className='alert alert-danger'; e.textContent = 'Network or server error'; document.getElementById('chatContainer').appendChild(e); }
+                        finally { loading.style.display='none'; }
+                    }
+
+                    document.addEventListener('DOMContentLoaded', ()=>{
+                        initCharts(); updateStats(); setInterval(updateStats, 30000);
+                        
+                        // Query form submission
+                        document.getElementById('queryForm').addEventListener('submit', (e)=>{ 
+                            e.preventDefault(); 
+                            const q = document.getElementById('queryInput').value.trim(); 
+                            if (!q) { 
+                                const w=document.createElement('div'); 
+                                w.className='alert alert-warning'; 
+                                w.textContent='Please enter a question'; 
+                                document.getElementById('chatContainer').appendChild(w); 
+                                setTimeout(()=>w.remove(),2000); 
+                                return; 
+                            } 
+                            askQuery(q); 
+                        });
+
+                        // Period selection buttons
+                        document.querySelectorAll('[data-period]').forEach(btn=>
+                            btn.addEventListener('click', ()=>{ 
+                                document.querySelectorAll('[data-period]').forEach(b=>b.classList.remove('active')); 
+                                btn.classList.add('active'); 
+                                currentPeriod = btn.dataset.period; 
+                                updateStats(); 
+                            })
+                        );
+
+                        // Chart type change
+                        document.getElementById('chartType').addEventListener('change', (e)=>{ 
+                            const t = e.target.value; 
+                            try{ 
+                                queryTypesChart.config.type = t; 
+                                queryTypesChart.update(); 
+                            }catch(e){ 
+                                console.debug(e); 
+                            } 
+                        });
+
+                        // Export button
+                        document.getElementById('exportBtn').addEventListener('click', ()=>{ 
+                            fetch('/export_data')
+                                .then(r=>r.blob())
+                                .then(b=>{ 
+                                    const url=URL.createObjectURL(b); 
+                                    const a=document.createElement('a'); 
+                                    a.href=url; 
+                                    a.download='analytics.csv'; 
+                                    document.body.appendChild(a); 
+                                    a.click(); 
+                                    a.remove(); 
+                                    URL.revokeObjectURL(url); 
+                                })
+                                .catch(err=>{ 
+                                    console.error('export failed',err); 
+                                    alert('Export failed'); 
+                                }); 
+                        });
+
+                        // Reset button
+                        document.getElementById('resetBtn').addEventListener('click', async ()=>{ 
+                            if (confirm('Are you sure you want to reset all analytics data? This cannot be undone.')) {
+                                try {
+                                    const res = await fetch('/reset_analytics', { 
+                                        method: 'POST',
+                                        headers: {'Content-Type': 'application/json'}
+                                    });
+                                    
+                                    if (res.ok) {
+                                        // Clear chat container
+                                        document.getElementById('chatContainer').innerHTML = '';
+                                        // Reset charts and stats
+                                        initCharts();
+                                        updateStats();
+                                        alert('Analytics data has been reset successfully');
+                                    } else {
+                                        throw new Error('Failed to reset analytics');
+                                    }
+                                } catch (err) {
+                                    console.error('Reset failed:', err);
+                                    alert('Failed to reset analytics: ' + err.message);
+                                }
+                            }
+                        });
+                    });
+                </script>
+            </body>
+            </html>
